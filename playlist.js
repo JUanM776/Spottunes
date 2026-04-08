@@ -458,7 +458,7 @@
     var container = $('recent-played-cards');
     if(!section || !container) return;
 
-    if(recentlyPlayed.length === 0){ section.style.display = 'none'; return; }
+    if(recentlyPlayed.length < 3){ section.style.display = 'none'; return; }
     section.style.display = 'block';
     container.innerHTML = '';
 
