@@ -74,10 +74,8 @@
   var $ = function(id){return document.getElementById(id);};
   var audio = $('audio-player');
   var listEl = $('playlist');
-  var searchTerm = $('search-term'), searchBtn = $('search-btn'), searchResults = $('search-results');
-  var titleInput = $('song-title'), artistInput = $('song-artist'), positionInput = $('song-position');
-  var addStartBtn = $('add-start'), addEndBtn = $('add-end'), addAtBtn = $('add-at'), removeBtn = $('remove-current');
-  var playAllBtn = $('play-all');
+  var searchTerm = $('search-term'), searchResults = $('search-results');
+  var searchDropdown = $('search-dropdown');
   var cbPlay = $('cb-play'), cbPrev = $('cb-prev'), cbNext = $('cb-next');
   var cbProgress = $('cb-progress'), cbVolume = $('cb-volume');
   var cbFav = $('cb-fav'), cbFullscreen = $('cb-fullscreen');
@@ -93,7 +91,6 @@
   var cbQueueBtn = $('cb-queue-btn');
   var npVisualizer = $('np-visualizer');
   var fsVisualizer = $('fs-visualizer');
-  var toggleManual = $('toggle-manual'), manualContent = $('manual-content');
 
   // ===== UTILS =====
   function toast(msg,type){
@@ -406,6 +403,7 @@
     card.querySelector('.rc-add').addEventListener('click',function(){
       getList().pushBack({id:String(item.trackId||uid()),title:title,artist:artist,previewUrl:preview,artwork:art});
       render();save();toast('✓ '+title+' añadida');
+      closeDropdown();
     });
     return card;
   }
@@ -430,10 +428,13 @@
   }
 
   function renderRecent(){
-    var el=$('recent-searches');if(!el)return;el.innerHTML='';
+    var el=$('sd-recent');if(!el)return;el.innerHTML='';
     recentSearches.forEach(function(t){
       var tag=document.createElement('button');tag.className='recent-tag';tag.textContent=t;
-      tag.addEventListener('click',function(){searchTerm.value=t;doSearch(t,searchResults,searchBtn);});
+      tag.addEventListener('click',function(){
+        searchTerm.value=t;
+        doSearch(t,searchResults,null);
+      });
       el.appendChild(tag);
     });
   }
@@ -460,12 +461,6 @@
       if(tc)tc.textContent=formatTime(ct);if(tt)tt.textContent=formatTime(d);}
   }
 
-  function readSong(){
-    var t=(titleInput.value||'').trim(),a=(artistInput.value||'').trim()||'Desconocido';
-    if(!t){toast('Ingresa un título','error');return null;}
-    return{id:uid(),title:t,artist:a};
-  }
-  function clearInputs(){titleInput.value='';artistInput.value='';positionInput.value='';}
 
   // ===== PLAYLIST CARD =====
   function addPlaylistCard(id,name){
@@ -514,24 +509,45 @@
   }
 
   // ===== EVENTS =====
-  // Manual add
-  addStartBtn.addEventListener('click',function(){var s=readSong();if(!s)return;getList().pushFront(s);render();clearInputs();save();toast('✓ Al inicio');});
-  addEndBtn.addEventListener('click',function(){var s=readSong();if(!s)return;getList().pushBack(s);render();clearInputs();save();toast('✓ Al final');});
-  addAtBtn.addEventListener('click',function(){var s=readSong();if(!s)return;var p=parseInt(positionInput.value,10);if(!isFinite(p)||p<1){toast('Posición inválida','error');return;}getList().insertAt(s,p);render();clearInputs();save();toast('✓ En posición '+p);});
-  removeBtn.addEventListener('click',function(){var list=getList();if(!list._cursor){toast('Nada seleccionado','error');return;}list.removeCursor();if(audio&&!audio.paused){audio.pause();isPlaying=false;}render();save();toast('Eliminada');});
 
-  // Toggle manual section
-  if(toggleManual)toggleManual.addEventListener('click',function(){manualContent.style.display=manualContent.style.display==='none'?'block':'none';});
+  // Search dropdown behavior
+  function openDropdown(){ if(searchDropdown) searchDropdown.classList.add('open'); }
+  function closeDropdown(){ if(searchDropdown) searchDropdown.classList.remove('open'); }
 
-  // Play all
-  if(playAllBtn)playAllBtn.addEventListener('click',function(){var l=getList();if(l._length===0){toast('Lista vacía','error');return;}if(!l._cursor)l._cursor=l.head;render();playCurrent();});
-
-  // Search
-  if(searchBtn)searchBtn.addEventListener('click',function(){doSearch(searchTerm.value,searchResults,searchBtn);});
   if(searchTerm){
-    searchTerm.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch(searchTerm.value,searchResults,searchBtn);});
-    searchTerm.addEventListener('input',function(){clearTimeout(debounceTimer);debounceTimer=setTimeout(function(){var v=searchTerm.value.trim();if(v.length>=3)doSearch(v,searchResults,null);},600);});
+    searchTerm.addEventListener('focus', function(){
+      openDropdown();
+    });
+    searchTerm.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){ doSearch(searchTerm.value,searchResults,null); openDropdown(); }
+      if(e.key==='Escape'){ closeDropdown(); searchTerm.blur(); }
+    });
+    searchTerm.addEventListener('input',function(){
+      openDropdown();
+      clearTimeout(debounceTimer);
+      debounceTimer=setTimeout(function(){
+        var v=searchTerm.value.trim();
+        if(v.length>=2) doSearch(v,searchResults,null);
+        else { searchResults.innerHTML=''; if(searchFilters) searchFilters.style.display='none'; }
+      },400);
+    });
   }
+
+  // Close dropdown on click outside
+  document.addEventListener('click',function(e){
+    if(searchDropdown && !searchDropdown.contains(e.target) && e.target!==searchTerm && !e.target.closest('.topnav-search')){
+      closeDropdown();
+    }
+  });
+
+  // Ctrl+K shortcut to focus search
+  document.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey) && e.key==='k'){
+      e.preventDefault();
+      searchTerm.focus();
+      openDropdown();
+    }
+  });
 
   if(searchFilters)searchFilters.querySelectorAll('.filter-chip').forEach(function(tab){
     tab.addEventListener('click',function(){searchFilters.querySelectorAll('.filter-chip').forEach(function(t){t.classList.remove('active');});tab.classList.add('active');
@@ -622,16 +638,6 @@
     addPlaylistCard(id,name);modal.style.display='none';modalName.value='';save();toast('Playlist "'+name+'" creada');
   });
   if(cancelPlaylist)cancelPlaylist.addEventListener('click',function(){modal.style.display='none';modalName.value='';});
-
-  // Topnav tabs
-  document.querySelectorAll('.topnav-tab').forEach(function(tab){
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('.topnav-tab').forEach(function(t){t.classList.remove('active');});
-      tab.classList.add('active');
-      if(tab.getAttribute('data-tab')==='search')searchTerm.focus();
-      if(tab.getAttribute('data-tab')==='shuffle'){toggleShuffle();if(getList()._length>0){if(!getList()._cursor)getList()._cursor=getList().head;var nx=getNext();if(nx){render();playCurrent();}}}
-    });
-  });
 
   // ===== KEYBOARD =====
   document.addEventListener('keydown',function(e){
