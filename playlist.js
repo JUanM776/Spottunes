@@ -67,6 +67,7 @@
   var shuffleMode = false;
   var repeatMode = 0;
   var queue = [];
+  var recentlyPlayed = JSON.parse(localStorage.getItem('recentlyPlayed') || '[]');
   var audioCtx = null, analyser = null, sourceNode = null;
   var debounceTimer = null;
 
@@ -439,9 +440,50 @@
     });
   }
 
+  // ===== RECENTLY PLAYED =====
+  function trackRecentlyPlayed(song){
+    if(!song || !song.artwork) return;
+    // Remove if already exists
+    recentlyPlayed = recentlyPlayed.filter(function(s){ return s.id !== song.id; });
+    // Add to front
+    recentlyPlayed.unshift({ id: song.id, title: song.title, artist: song.artist, artwork: song.artwork, previewUrl: song.previewUrl });
+    // Keep max 12
+    if(recentlyPlayed.length > 12) recentlyPlayed = recentlyPlayed.slice(0, 12);
+    try { localStorage.setItem('recentlyPlayed', JSON.stringify(recentlyPlayed)); } catch(e){}
+    renderRecentlyPlayed();
+  }
+
+  function renderRecentlyPlayed(){
+    var section = $('recent-played-section');
+    var container = $('recent-played-cards');
+    if(!section || !container) return;
+
+    if(recentlyPlayed.length === 0){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    container.innerHTML = '';
+
+    recentlyPlayed.forEach(function(song){
+      var card = document.createElement('div');
+      card.className = 'rp-card';
+      card.innerHTML = '<div class="rp-card-art" style="background-image:url(' + song.artwork + ')"><span class="rp-card-play">▶</span></div><div class="rp-card-title">' + song.title + '</div><div class="rp-card-artist">' + song.artist + '</div>';
+      card.addEventListener('click', function(){
+        // Add to current playlist if not there, then play
+        var list = getList();
+        var exists = list.toArray().some(function(s){ return s.id === song.id; });
+        if(!exists) list.pushBack(song);
+        // Move cursor to this song
+        var nd = list.head;
+        while(nd){ if(nd.value.id === song.id){ list._cursor = nd; break; } nd = nd.next; }
+        render(); playCurrent();
+      });
+      container.appendChild(card);
+    });
+  }
+
   // ===== PLAYBACK =====
   function playCurrent(){
     var cur=getList()._cursor;if(!cur||!cur.value.previewUrl)return;
+    trackRecentlyPlayed(cur.value);
     initAudio();audio.src=cur.value.previewUrl;
     audio.volume=cbVolume?parseInt(cbVolume.value,10)/100:0.8;
     audio.play().then(function(){isPlaying=true;updatePlayIcons();updateFS();}).catch(function(){});
@@ -669,5 +711,5 @@
     });
     if(dirty)save();
   });
-  renderRecent();render();
+  renderRecent();renderRecentlyPlayed();render();
 })();
