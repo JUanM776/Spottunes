@@ -7,11 +7,11 @@
   --accent-dim: rgba(255, 107, 53, 0.15);
   --accent-glow: rgba(255, 107, 53, 0.25);
   --black: #000;
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface2: #1a1a1a;
-  --surface3: #222;
-  --border: rgba(255,255,255,0.06);
+  --bg: #161618;
+  --surface: #1e1e21;
+  --surface2: #252528;
+  --surface3: #2e2e32;
+  --border: rgba(255,255,255,0.07);
   --text: #ffffff;
   --text2: #a0a0a0;
   --text3: #555;
@@ -205,7 +205,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: h
 
 .hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(0deg, var(--surface) 0%, rgba(20,20,20,0.6) 40%, rgba(20,20,20,0.1) 70%, transparent 100%);
+  background: linear-gradient(0deg, var(--surface) 0%, rgba(30,30,33,0.6) 40%, rgba(30,30,33,0.1) 70%, transparent 100%);
 }
 
 .hero-inner { position: relative; z-index: 2; padding: 36px; flex: 1; }
@@ -498,7 +498,7 @@ button:active { transform: scale(0.97); }
 /* ===== CONTROL BAR ===== */
 .control-bar {
   grid-column: 1 / -1; grid-row: 3;
-  background: linear-gradient(0deg, rgba(0,0,0,0.9), var(--bg));
+  background: linear-gradient(0deg, rgba(18,18,20,0.95), var(--bg));
   border-top: 1px solid var(--border);
   display: grid; grid-template-columns: 1fr 2fr 1fr;
   align-items: center; padding: 0 20px;
