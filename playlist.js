@@ -118,6 +118,9 @@
       var name = playlistName || getPlaylistName(currentPlaylistId);
       $('hero-title').textContent = name;
       $('hero-badge').textContent = currentPlaylistId === 'favorites' ? 'FAVORITOS' : 'PLAYLIST';
+      // Show delete button only for custom playlists
+      var delBtn = $('hero-delete');
+      if(delBtn) delBtn.style.display = (currentPlaylistId !== 'main' && currentPlaylistId !== 'favorites') ? 'flex' : 'none';
       updateIconbarActive(currentPlaylistId);
       render();
       mainEl.scrollTop = 0;
@@ -815,6 +818,27 @@
     var l=getList();if(l._length===0)return;
     if(!l._cursor)l._cursor=l.head;
     var nx=getNext();if(nx){render();playCurrent();}
+  });
+
+  // Delete playlist
+  var heroDelete=$('hero-delete');
+  if(heroDelete) heroDelete.addEventListener('click', function(){
+    if(currentPlaylistId==='main'||currentPlaylistId==='favorites') return;
+    var name = getPlaylistName(currentPlaylistId);
+    // Remove from data
+    delete playlists[currentPlaylistId];
+    var idx = customPlaylists.findIndex(function(p){ return p.id === currentPlaylistId; });
+    if(idx >= 0) customPlaylists.splice(idx, 1);
+    // Remove from DOM
+    var pcard = document.querySelector('.pcard[data-playlist-id="'+currentPlaylistId+'"]');
+    if(pcard) pcard.remove();
+    var ibpl = document.querySelector('.ib-pl[data-playlist-id="'+currentPlaylistId+'"]');
+    if(ibpl) ibpl.remove();
+    // Go home
+    currentPlaylistId = 'main';
+    save();
+    navigateTo('home');
+    toast('Playlist "' + name + '" eliminada');
   });
 
   // Playlist cards click (initial ones)
