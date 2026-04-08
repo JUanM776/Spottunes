@@ -261,6 +261,12 @@
     // Track list
     listEl.innerHTML='';
     var arr=list.toArray();
+
+    // Empty state
+    if(arr.length===0){
+      listEl.innerHTML='<div class="empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div><h3>Tu playlist está vacía</h3><p>Busca canciones arriba y agrégalas a tu colección</p></div>';
+    }
+
     arr.forEach(function(song,i){
       var li=document.createElement('li');
       li.setAttribute('data-index',i+1);
@@ -269,7 +275,8 @@
 
       var thumb=document.createElement('div');thumb.className='song-thumb';
       if(song.artwork)thumb.style.backgroundImage='url('+song.artwork+')';
-
+      var thumbPlay=document.createElement('span');thumbPlay.className='thumb-play';thumbPlay.textContent='▶';
+      thumb.appendChild(thumbPlay);
       var info=document.createElement('div');info.className='song-info';
       info.innerHTML='<div class="song-title">'+song.title+'</div>';
 
@@ -644,10 +651,17 @@
 
   // ===== INIT =====
   var loaded=load();
-  if(!loaded){
-    playlists.main.pushBack({id:uid(),title:'Intro',artist:'DJ Start'});
-    playlists.main.pushBack({id:uid(),title:'Canción 2',artist:'La Banda'});
-    playlists.main.pushBack({id:uid(),title:'Finale',artist:'Cierre'});
-  }
+  // Clean old default songs that have no previewUrl
+  ['main','favorites'].forEach(function(k){
+    if(!playlists[k])return;
+    var arr=playlists[k].toArray();
+    var dirty=false;
+    arr.forEach(function(s){
+      if(!s.previewUrl && !s.artwork){
+        playlists[k].removeById(s.id); dirty=true;
+      }
+    });
+    if(dirty)save();
+  });
   renderRecent();render();
 })();

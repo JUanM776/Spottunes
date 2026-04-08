@@ -303,8 +303,7 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: h
 .search-bar-row { display: flex; gap: 8px; margin-bottom: 10px; }
 
 .search-input-wrap { flex: 1; position: relative; display: flex; align-items: center; }
-.search-icon { position: absolute; left: 14px; color: var(--text3); pointer-events: none; }
-.search-input-wrap input { padding-left: 38px; }
+.search-input-wrap input { width: 100%; }
 
 .recent-searches { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
 .recent-tag {
@@ -704,3 +703,95 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; text-align: center;
+  grid-column: 1 / -1;
+}
+
+.empty-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--surface3); display: flex;
+  align-items: center; justify-content: center;
+  margin-bottom: 20px; color: var(--text3);
+  animation: emptyPulse 3s ease-in-out infinite;
+}
+
+@keyframes emptyPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.empty-state h3 {
+  font-size: 18px; font-weight: 700; color: var(--text);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 13px; color: var(--text3); max-width: 280px;
+  line-height: 1.5;
+}
+
+/* ===== THUMB PLAY OVERLAY ===== */
+.song-thumb {
+  position: relative; overflow: hidden;
+}
+
+.thumb-play {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.5); color: var(--text);
+  font-size: 14px; opacity: 0;
+  transition: opacity var(--transition);
+  border-radius: 6px;
+}
+
+.tracklist li:hover .thumb-play { opacity: 1; }
+
+/* ===== ANIMATED HERO GRADIENT ===== */
+@keyframes heroShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-bg {
+  background-size: 200% 200%;
+  animation: heroShift 12s ease infinite;
+}
+
+/* ===== TRACKLIST ENTER ANIMATION ===== */
+.tracklist li {
+  animation: trackSlideIn 0.3s ease both;
+}
+
+@keyframes trackSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== NP CARD GLOW ===== */
+.np-card {
+  border: 1px solid var(--border);
+  transition: border-color 0.5s ease;
+}
+
+.np-card:has(.np-art[style*="url"]) {
+  border-color: rgba(255,107,53,0.15);
+}
+
+/* ===== PCARD ACTIVE INDICATOR ===== */
+.active-card .pcard-art::before {
+  content: ''; position: absolute; inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--accent);
+  opacity: 0.5;
+}
+
+/* ===== CONTROL BAR GLASS ===== */
+.control-bar {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
