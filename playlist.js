@@ -402,8 +402,13 @@
       if(preview&&audio){initAudio();audio.src=preview;audio.volume=cbVolume?parseInt(cbVolume.value,10)/100:0.8;audio.play().then(function(){isPlaying=true;updatePlayIcons();}).catch(function(){});}
     });
     card.querySelector('.rc-add').addEventListener('click',function(){
-      getList().pushBack({id:String(item.trackId||uid()),title:title,artist:artist,previewUrl:preview,artwork:art});
-      render();save();toast('✓ '+title+' añadida');
+      var song={id:String(item.trackId||uid()),title:title,artist:artist,previewUrl:preview,artwork:art};
+      var list=getList();
+      list.pushBack(song);
+      // Move cursor to the newly added song (last node) and play
+      list._cursor=list.tail;
+      render();save();playCurrent();
+      toast('▶ '+title+' reproduciendo');
       closeDropdown();
     });
     return card;
