@@ -141,6 +141,23 @@
 
       <!-- TRACK LIST -->
       <section class="tracklist-section">
+        <div class="tracklist-toolbar">
+          <div class="tl-filter-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="tl-filter-icon"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input id="tracklist-filter" type="text" placeholder="Filtrar en playlist..." />
+          </div>
+          <div class="tl-sort">
+            <button class="tl-sort-btn" id="sort-btn" title="Ordenar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></svg>
+              <span id="sort-label">Orden</span>
+            </button>
+            <div class="sort-menu" id="sort-menu">
+              <button data-sort="default">Por defecto</button>
+              <button data-sort="title">Por título</button>
+              <button data-sort="artist">Por artista</button>
+            </div>
+          </div>
+        </div>
         <div class="tracklist-header">
           <span class="th-num">#</span>
           <span class="th-title">TÍTULO</span>
@@ -277,6 +294,39 @@
         <div class="modal-actions">
           <button id="cancel-playlist">Cancelar</button>
           <button id="confirm-playlist" class="btn-accent">Crear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SONG NOTIFICATION -->
+    <div class="song-notif" id="song-notif">
+      <div class="sn-art" id="sn-art"></div>
+      <div class="sn-info">
+        <div class="sn-label">Reproduciendo ahora</div>
+        <div class="sn-title" id="sn-title"></div>
+        <div class="sn-artist" id="sn-artist"></div>
+      </div>
+    </div>
+
+    <!-- SHORTCUTS MODAL -->
+    <div class="modal" id="shortcuts-modal">
+      <div class="modal-box shortcuts-box">
+        <div class="shortcuts-head">
+          <h2>Atajos de teclado</h2>
+          <button class="icon-btn" id="close-shortcuts"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+        </div>
+        <div class="shortcuts-grid">
+          <div class="sc-item"><kbd>Espacio</kbd><span>Play / Pausa</span></div>
+          <div class="sc-item"><kbd>←</kbd><span>Canción anterior</span></div>
+          <div class="sc-item"><kbd>→</kbd><span>Canción siguiente</span></div>
+          <div class="sc-item"><kbd>↑</kbd><span>Subir volumen</span></div>
+          <div class="sc-item"><kbd>↓</kbd><span>Bajar volumen</span></div>
+          <div class="sc-item"><kbd>S</kbd><span>Aleatorio</span></div>
+          <div class="sc-item"><kbd>R</kbd><span>Repetir</span></div>
+          <div class="sc-item"><kbd>F</kbd><span>Pantalla completa</span></div>
+          <div class="sc-item"><kbd>Ctrl K</kbd><span>Buscar</span></div>
+          <div class="sc-item"><kbd>?</kbd><span>Mostrar atajos</span></div>
+          <div class="sc-item"><kbd>Esc</kbd><span>Cerrar paneles</span></div>
         </div>
       </div>
     </div>

@@ -70,6 +70,8 @@
   var recentlyPlayed = JSON.parse(localStorage.getItem('recentlyPlayed') || '[]');
   var audioCtx = null, analyser = null, sourceNode = null;
   var debounceTimer = null;
+  var currentSort = 'default';
+  var songNotifTimer = null;
 
   // ===== DOM =====
   var $ = function(id){return document.getElementById(id);};
@@ -92,6 +94,8 @@
   var cbQueueBtn = $('cb-queue-btn');
   var npVisualizer = $('np-visualizer');
   var fsVisualizer = $('fs-visualizer');
+  var tracklistFilter = $('tracklist-filter');
+  var sortBtn = $('sort-btn'), sortMenu = $('sort-menu');
 
   // ===== UTILS =====
   function toast(msg,type){
@@ -260,26 +264,46 @@
     listEl.innerHTML='';
     var arr=list.toArray();
 
-    // Empty state
-    if(arr.length===0){
-      listEl.innerHTML='<div class="empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div><h3>Tu playlist está vacía</h3><p>Busca canciones arriba y agrégalas a tu colección</p></div>';
+    // Apply filter
+    var filterVal = tracklistFilter ? tracklistFilter.value.trim().toLowerCase() : '';
+    var filtered = arr;
+    if(filterVal){
+      filtered = arr.filter(function(s){
+        return s.title.toLowerCase().indexOf(filterVal)!==-1 || s.artist.toLowerCase().indexOf(filterVal)!==-1;
+      });
     }
 
-    arr.forEach(function(song,i){
+    // Apply sort
+    if(currentSort==='title') filtered.sort(function(a,b){ return a.title.localeCompare(b.title); });
+    else if(currentSort==='artist') filtered.sort(function(a,b){ return a.artist.localeCompare(b.artist); });
+
+    // Empty state
+    if(arr.length===0){
+      listEl.innerHTML='<div class="empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div><h3>Tu playlist está vacía</h3><p>Busca canciones con Ctrl+K y agrégalas a tu colección</p></div>';
+    }
+
+    filtered.forEach(function(song,i){
+      var realIndex = arr.indexOf(song);
       var li=document.createElement('li');
-      li.setAttribute('data-index',i+1);
+      li.setAttribute('data-index',realIndex+1);
       li.setAttribute('draggable','true');
-      if(cur&&cur.id===song.id)li.classList.add('is-playing');
+      var isCurrent = cur&&cur.id===song.id;
+      if(isCurrent) li.classList.add('is-playing');
 
       var thumb=document.createElement('div');thumb.className='song-thumb';
       if(song.artwork)thumb.style.backgroundImage='url('+song.artwork+')';
       var thumbPlay=document.createElement('span');thumbPlay.className='thumb-play';thumbPlay.textContent='▶';
       thumb.appendChild(thumbPlay);
+
       var info=document.createElement('div');info.className='song-info';
       info.innerHTML='<div class="song-title">'+song.title+'</div>';
 
       var artistCol=document.createElement('div');artistCol.className='song-artist-col';
       artistCol.textContent=song.artist;
+
+      // Duration column
+      var durCol=document.createElement('div');durCol.className='song-duration';
+      durCol.textContent=song.previewUrl?'0:30':'—';
 
       var actions=document.createElement('div');actions.className='song-actions';
       var fb=document.createElement('button');fb.className='song-fav-btn';
@@ -287,20 +311,35 @@
       fb.addEventListener('click',function(e){e.stopPropagation();toggleFav(song);});
       var qb=document.createElement('button');qb.className='song-queue-btn';qb.textContent='+ Cola';
       qb.addEventListener('click',function(e){e.stopPropagation();addToQueue(song);});
-      actions.appendChild(fb);actions.appendChild(qb);
+      var db=document.createElement('button');db.className='song-del-btn';db.textContent='×';db.title='Eliminar';
+      db.addEventListener('click',function(e){
+        e.stopPropagation();
+        list.removeById(song.id);
+        if(audio&&!audio.paused&&cur&&cur.id===song.id){audio.pause();isPlaying=false;}
+        render();save();toast('Canción eliminada');
+      });
+      actions.appendChild(fb);actions.appendChild(qb);actions.appendChild(db);
 
-      li.appendChild(thumb);li.appendChild(info);li.appendChild(artistCol);li.appendChild(actions);
+      li.appendChild(thumb);li.appendChild(info);li.appendChild(artistCol);li.appendChild(durCol);li.appendChild(actions);
+
+      // Equalizer bars for playing song (replace number)
+      if(isCurrent && isPlaying){
+        li.setAttribute('data-index','');
+        var eq=document.createElement('div');eq.className='eq-bars';
+        eq.innerHTML='<span></span><span></span><span></span><span></span>';
+        li.prepend(eq);
+      }
 
       // Drag
-      li.addEventListener('dragstart',function(e){draggedIndex=i;li.style.opacity='0.4';e.dataTransfer.effectAllowed='move';});
+      li.addEventListener('dragstart',function(e){draggedIndex=realIndex;li.style.opacity='0.4';e.dataTransfer.effectAllowed='move';});
       li.addEventListener('dragend',function(){li.style.opacity='1';draggedIndex=null;});
       li.addEventListener('dragover',function(e){e.preventDefault();li.style.borderTop='2px solid var(--accent)';});
       li.addEventListener('dragleave',function(){li.style.borderTop='';});
-      li.addEventListener('drop',function(e){e.preventDefault();li.style.borderTop='';if(draggedIndex!==null&&draggedIndex!==i){list.moveNode(draggedIndex,i);render();save();}});
+      li.addEventListener('drop',function(e){e.preventDefault();li.style.borderTop='';if(draggedIndex!==null&&draggedIndex!==realIndex){list.moveNode(draggedIndex,realIndex);render();save();}});
 
       li.addEventListener('click',function(){
         var nd=list.head,idx=0;
-        while(nd){if(idx===i){list._cursor=nd;render();playCurrent();break;}nd=nd.next;idx++;}
+        while(nd){if(idx===realIndex){list._cursor=nd;render();playCurrent();break;}nd=nd.next;idx++;}
       });
 
       listEl.appendChild(li);
@@ -485,10 +524,24 @@
     });
   }
 
+  // ===== SONG NOTIFICATION =====
+  function showSongNotif(song){
+    if(!song) return;
+    var notif=$('song-notif'),snArt=$('sn-art'),snTitle=$('sn-title'),snArtist=$('sn-artist');
+    if(!notif) return;
+    if(song.artwork) snArt.style.backgroundImage='url('+song.artwork+')';
+    snTitle.textContent=song.title;
+    snArtist.textContent=song.artist;
+    notif.classList.add('show');
+    clearTimeout(songNotifTimer);
+    songNotifTimer=setTimeout(function(){ notif.classList.remove('show'); },3500);
+  }
+
   // ===== PLAYBACK =====
   function playCurrent(){
     var cur=getList()._cursor;if(!cur||!cur.value.previewUrl)return;
     trackRecentlyPlayed(cur.value);
+    showSongNotif(cur.value);
     initAudio();audio.src=cur.value.previewUrl;
     audio.volume=cbVolume?parseInt(cbVolume.value,10)/100:0.8;
     audio.play().then(function(){isPlaying=true;updatePlayIcons();updateFS();}).catch(function(){});
@@ -686,6 +739,32 @@
   });
   if(cancelPlaylist)cancelPlaylist.addEventListener('click',function(){modal.style.display='none';modalName.value='';});
 
+  // ===== SORT & FILTER =====
+  if(tracklistFilter) tracklistFilter.addEventListener('input', function(){ render(); });
+
+  if(sortBtn) sortBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    sortMenu.classList.toggle('open');
+  });
+
+  if(sortMenu) sortMenu.querySelectorAll('button').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      currentSort = btn.getAttribute('data-sort');
+      var sortLabel = $('sort-label');
+      if(sortLabel) sortLabel.textContent = btn.textContent;
+      sortMenu.classList.remove('open');
+      render();
+    });
+  });
+
+  document.addEventListener('click', function(){ if(sortMenu) sortMenu.classList.remove('open'); });
+
+  // ===== SHORTCUTS MODAL =====
+  var shortcutsModal = $('shortcuts-modal');
+  var closeShortcuts = $('close-shortcuts');
+  if(closeShortcuts) closeShortcuts.addEventListener('click', function(){ shortcutsModal.style.display='none'; });
+
   // ===== KEYBOARD =====
   document.addEventListener('keydown',function(e){
     if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
@@ -696,10 +775,12 @@
       case'KeyS':toggleShuffle();break;
       case'KeyR':cycleRepeat();break;
       case'KeyF':if(cbFullscreen)cbFullscreen.click();break;
-      case'Escape':fsPlayer.classList.remove('active');queuePanel.classList.remove('open');break;
+      case'Escape':fsPlayer.classList.remove('active');queuePanel.classList.remove('open');if(shortcutsModal)shortcutsModal.style.display='none';break;
       case'ArrowUp':e.preventDefault();if(cbVolume){cbVolume.value=Math.min(100,parseInt(cbVolume.value)+5);cbVolume.dispatchEvent(new Event('input'));}break;
       case'ArrowDown':e.preventDefault();if(cbVolume){cbVolume.value=Math.max(0,parseInt(cbVolume.value)-5);cbVolume.dispatchEvent(new Event('input'));}break;
     }
+    // ? key for shortcuts
+    if(e.key==='?' && shortcutsModal){ shortcutsModal.style.display = shortcutsModal.style.display==='flex'?'none':'flex'; }
   });
 
   // ===== INIT =====
