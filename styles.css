@@ -44,7 +44,9 @@ body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: h
 .topnav-logo {
   display: flex; align-items: baseline; gap: 0;
   user-select: none; cursor: pointer;
+  transition: opacity var(--transition);
 }
+.topnav-logo:hover { opacity: 0.8; }
 
 .brand-spot {
   font-size: 20px; font-weight: 800; color: var(--text);
@@ -969,3 +971,88 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
   font-size: 12px; color: var(--text3); font-variant-numeric: tabular-nums;
   text-align: right; min-width: 36px;
 }
+
+/* ===== VIEW SYSTEM ===== */
+.view { animation: viewFadeIn 0.3s ease; }
+@keyframes viewFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===== HOME VIEW ===== */
+.home-greeting {
+  padding: 36px 36px 8px;
+}
+.home-greeting h1 {
+  font-size: 32px; font-weight: 800; letter-spacing: -0.03em;
+}
+
+/* Quick access grid */
+.quick-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px; padding: 16px 36px 8px;
+}
+
+.quick-card {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.05); border-radius: var(--radius);
+  overflow: hidden; cursor: pointer;
+  transition: all var(--transition); height: 64px;
+}
+.quick-card:hover { background: rgba(255,255,255,0.1); }
+
+.quick-card-art {
+  width: 64px; height: 64px; flex-shrink: 0;
+  background: var(--surface3); background-size: cover; background-position: center;
+}
+
+.quick-card-info {
+  flex: 1; padding: 0 14px; min-width: 0;
+}
+.quick-card-info span {
+  font-size: 13px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+}
+
+.quick-card-play {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent); color: var(--black);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; margin-right: 12px; flex-shrink: 0;
+  opacity: 0; transform: scale(0.8);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(255,107,53,0.3);
+  border: none; cursor: pointer; padding: 0;
+}
+.quick-card:hover .quick-card-play { opacity: 1; transform: scale(1); }
+
+/* ===== DETAIL VIEW ===== */
+.detail-back {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 20px; margin: 12px 24px 0;
+  background: none; border: none; color: var(--text2);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border-radius: var(--radius-full);
+  transition: all var(--transition);
+}
+.detail-back:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+
+.hero-actions {
+  display: flex; align-items: center; gap: 14px; margin-top: 20px;
+}
+
+.play-btn-hero {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); border: none; color: var(--black);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--transition);
+  box-shadow: 0 6px 20px rgba(255,107,53,0.35);
+  padding: 0;
+}
+.play-btn-hero:hover { transform: scale(1.06); box-shadow: 0 8px 28px rgba(255,107,53,0.5); }
+
+.hero-shuffle-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text2); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--transition); padding: 0;
+}
+.hero-shuffle-btn:hover { border-color: var(--text); color: var(--text); }

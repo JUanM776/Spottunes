@@ -96,6 +96,100 @@
   var fsVisualizer = $('fs-visualizer');
   var tracklistFilter = $('tracklist-filter');
   var sortBtn = $('sort-btn'), sortMenu = $('sort-menu');
+  var viewHome = $('view-home'), viewDetail = $('view-detail');
+  var currentView = 'home';
+
+  // ===== VIEW NAVIGATION =====
+  function navigateTo(view, playlistId, playlistName) {
+    var mainEl = $('main-content');
+    if(view === 'detail') {
+      if(playlistId) {
+        currentPlaylistId = playlistId;
+        save();
+      }
+      viewHome.style.display = 'none';
+      viewDetail.style.display = 'block';
+      viewDetail.style.animation = 'none';
+      viewDetail.offsetHeight; // reflow
+      viewDetail.style.animation = 'viewFadeIn 0.3s ease';
+      currentView = 'detail';
+
+      // Update hero
+      var name = playlistName || getPlaylistName(currentPlaylistId);
+      $('hero-title').textContent = name;
+      $('hero-badge').textContent = currentPlaylistId === 'favorites' ? 'FAVORITOS' : 'PLAYLIST';
+      updateIconbarActive(currentPlaylistId);
+      render();
+      mainEl.scrollTop = 0;
+    } else {
+      viewDetail.style.display = 'none';
+      viewHome.style.display = 'block';
+      viewHome.style.animation = 'none';
+      viewHome.offsetHeight;
+      viewHome.style.animation = 'viewFadeIn 0.3s ease';
+      currentView = 'home';
+      renderHome();
+      mainEl.scrollTop = 0;
+    }
+  }
+
+  function getPlaylistName(id) {
+    if(id === 'main') return 'Mi Playlist Principal';
+    if(id === 'favorites') return '❤️ Favoritos';
+    var cp = customPlaylists.find(function(p){ return p.id === id; });
+    return cp ? cp.name : 'Playlist';
+  }
+
+  function getGreeting() {
+    var h = new Date().getHours();
+    if(h < 12) return 'Buenos días';
+    if(h < 18) return 'Buenas tardes';
+    return 'Buenas noches';
+  }
+
+  function renderHome() {
+    // Greeting
+    var greetEl = $('home-greeting-text');
+    if(greetEl) greetEl.textContent = getGreeting();
+
+    // Quick access grid
+    var grid = $('quick-grid');
+    if(grid) {
+      grid.innerHTML = '';
+      var allPl = [{id:'main',name:'Mi Playlist'},{id:'favorites',name:'❤️ Favoritos'}].concat(customPlaylists);
+      allPl.forEach(function(p) {
+        var pl = playlists[p.id]; if(!pl) return;
+        var firstArt = '';
+        var arr = pl.toArray();
+        for(var i=0;i<arr.length;i++){ if(arr[i].artwork){ firstArt=arr[i].artwork; break; } }
+
+        var card = document.createElement('div');
+        card.className = 'quick-card';
+        card.innerHTML = '<div class="quick-card-art" style="' + (firstArt ? 'background-image:url('+firstArt+')' : 'background:linear-gradient(135deg,hsl('+(p.id.charCodeAt(0)*7%360)+',50%,35%),hsl('+(p.id.charCodeAt(0)*13%360)+',50%,20%))') + '"></div>' +
+          '<div class="quick-card-info"><span>' + p.name + '</span></div>' +
+          '<button class="quick-card-play">▶</button>';
+
+        card.addEventListener('click', function(){ navigateTo('detail', p.id, p.name); });
+        card.querySelector('.quick-card-play').addEventListener('click', function(e){
+          e.stopPropagation();
+          currentPlaylistId = p.id;
+          var list = getList();
+          if(list._length > 0) {
+            if(!list._cursor) list._cursor = list.head;
+            navigateTo('detail', p.id, p.name);
+            playCurrent();
+          } else {
+            navigateTo('detail', p.id, p.name);
+          }
+        });
+        grid.appendChild(card);
+      });
+    }
+
+    // Update playlist card counts
+    updatePlaylistCounts();
+    renderRecentlyPlayed();
+  }
 
   // ===== UTILS =====
   function toast(msg,type){
@@ -564,21 +658,12 @@
 
   // ===== PLAYLIST CARD =====
   function addPlaylistCard(id,name){
-    // Add to horizontal cards
     var container=$('playlists-cards');
     var card=document.createElement('div');card.className='pcard';card.setAttribute('data-playlist-id',id);
     var hue=Math.floor(Math.random()*360);
     card.innerHTML='<div class="pcard-art" style="background:linear-gradient(135deg,hsl('+hue+',50%,35%),hsl('+(hue+40)+',50%,20%));"><svg width="32" height="32" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div><div class="pcard-name">'+name+'</div><div class="pcard-count">0 canciones</div>';
-    card.addEventListener('click',function(){
-      document.querySelectorAll('.pcard').forEach(function(c){c.classList.remove('active-card');});
-      card.classList.add('active-card');
-      currentPlaylistId=id;$('hero-title').textContent=name;
-      updateIconbarActive(id);
-      render();save();
-    });
+    card.addEventListener('click',function(){ navigateTo('detail', id, name); });
     container.appendChild(card);
-
-    // Add to iconbar
     addIconbarItem(id, name, hue);
   }
 
@@ -590,15 +675,7 @@
     btn.setAttribute('title', name);
     var h = hue || (id.charCodeAt(0) * 7 % 360);
     btn.innerHTML = '<div class="ib-pl-art" style="background:linear-gradient(135deg,hsl('+h+',50%,35%),hsl('+(h+40)+',50%,20%));"><svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55C7.79 13 6 14.79 6 17s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>';
-    btn.addEventListener('click', function(){
-      currentPlaylistId = id;
-      $('hero-title').textContent = name;
-      document.querySelectorAll('.pcard').forEach(function(c){c.classList.remove('active-card');});
-      var pcard = document.querySelector('.pcard[data-playlist-id="'+id+'"]');
-      if(pcard) pcard.classList.add('active-card');
-      updateIconbarActive(id);
-      render(); save();
-    });
+    btn.addEventListener('click', function(){ navigateTo('detail', id, name); });
     ibContainer.appendChild(btn);
   }
 
@@ -703,13 +780,7 @@
   document.querySelectorAll('.ib-pl').forEach(function(btn){
     btn.addEventListener('click',function(){
       var id=btn.getAttribute('data-playlist-id');
-      currentPlaylistId=id;
-      $('hero-title').textContent=id==='favorites'?'❤️ Favoritos':'Mi Playlist Principal';
-      document.querySelectorAll('.pcard').forEach(function(c){c.classList.remove('active-card');});
-      var pcard=document.querySelector('.pcard[data-playlist-id="'+id+'"]');
-      if(pcard)pcard.classList.add('active-card');
-      updateIconbarActive(id);
-      render();save();
+      navigateTo('detail', id);
     });
   });
 
@@ -717,16 +788,40 @@
   var ibCreate=$('ib-create');
   if(ibCreate)ibCreate.addEventListener('click',function(){modal.style.display='flex';setTimeout(function(){modalName.focus();},100);});
 
+  // Navigation buttons
+  var detailBack=$('detail-back');
+  if(detailBack) detailBack.addEventListener('click', function(){ navigateTo('home'); });
+
+  var navBack=$('nav-back');
+  if(navBack) navBack.addEventListener('click', function(){ navigateTo('home'); });
+
+  // Logo click → home
+  var topnavLogo=document.querySelector('.topnav-logo');
+  if(topnavLogo) topnavLogo.addEventListener('click', function(){ navigateTo('home'); });
+  var ibLogo=document.querySelector('.ib-logo');
+  if(ibLogo) ibLogo.addEventListener('click', function(){ navigateTo('home'); });
+
+  // Hero play all & shuffle
+  var playAllBtn=$('play-all');
+  if(playAllBtn) playAllBtn.addEventListener('click', function(){
+    var l=getList();if(l._length===0){toast('Lista vacía','error');return;}
+    if(!l._cursor)l._cursor=l.head;
+    render();playCurrent();
+  });
+
+  var heroShuffle=$('hero-shuffle');
+  if(heroShuffle) heroShuffle.addEventListener('click', function(){
+    toggleShuffle();
+    var l=getList();if(l._length===0)return;
+    if(!l._cursor)l._cursor=l.head;
+    var nx=getNext();if(nx){render();playCurrent();}
+  });
+
   // Playlist cards click (initial ones)
   document.querySelectorAll('.pcard').forEach(function(card){
     card.addEventListener('click',function(){
-      document.querySelectorAll('.pcard').forEach(function(c){c.classList.remove('active-card');});
-      card.classList.add('active-card');
       var id=card.getAttribute('data-playlist-id');
-      currentPlaylistId=id;
-      $('hero-title').textContent=id==='favorites'?'❤️ Favoritos':'Mi Playlist Principal';
-      updateIconbarActive(id);
-      render();save();
+      navigateTo('detail', id);
     });
   });
 
@@ -797,5 +892,5 @@
     });
     if(dirty)save();
   });
-  renderRecent();renderRecentlyPlayed();render();
+  renderRecent();renderHome();render();
 })();
