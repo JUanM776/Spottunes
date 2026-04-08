@@ -834,6 +834,25 @@
   });
   if(cancelPlaylist)cancelPlaylist.addEventListener('click',function(){modal.style.display='none';modalName.value='';});
 
+  // ===== GENRE & TRENDING CLICKS =====
+  document.querySelectorAll('.genre-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      var genre = card.getAttribute('data-genre');
+      searchTerm.value = genre;
+      doSearch(genre, searchResults, null);
+      openDropdown();
+    });
+  });
+
+  document.querySelectorAll('.trending-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      var query = item.getAttribute('data-query');
+      searchTerm.value = query;
+      doSearch(query, searchResults, null);
+      openDropdown();
+    });
+  });
+
   // ===== SORT & FILTER =====
   if(tracklistFilter) tracklistFilter.addEventListener('input', function(){ render(); });
 

@@ -38,14 +38,7 @@
           <div id="search-results" class="sd-results"></div>
         </div>
       </div>
-      <div class="topnav-right">
-        <div class="user-pill">
-          <div class="user-avatar">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          </div>
-          <span>Mi Cuenta</span>
-        </div>
-      </div>
+      <div class="topnav-right"></div>
     </nav>
 
     <!-- ICON BAR (Spotify-style compact sidebar) -->
@@ -125,6 +118,58 @@
             <h2>Escuchado recientemente</h2>
           </div>
           <div class="cards-scroll" id="recent-played-cards"></div>
+        </section>
+
+        <!-- Explore genres -->
+        <section class="cards-section">
+          <div class="cards-header">
+            <h2>Explorar por género</h2>
+          </div>
+          <div class="genre-grid" id="genre-grid">
+            <div class="genre-card" data-genre="pop" style="background:linear-gradient(135deg,#e91e63,#ff5722);">Pop</div>
+            <div class="genre-card" data-genre="rock" style="background:linear-gradient(135deg,#607d8b,#263238);">Rock</div>
+            <div class="genre-card" data-genre="hip hop" style="background:linear-gradient(135deg,#ff9800,#e65100);">Hip Hop</div>
+            <div class="genre-card" data-genre="reggaeton" style="background:linear-gradient(135deg,#4caf50,#1b5e20);">Reggaetón</div>
+            <div class="genre-card" data-genre="electronic" style="background:linear-gradient(135deg,#9c27b0,#4a148c);">Electrónica</div>
+            <div class="genre-card" data-genre="r&b" style="background:linear-gradient(135deg,#3f51b5,#1a237e);">R&B</div>
+            <div class="genre-card" data-genre="jazz" style="background:linear-gradient(135deg,#795548,#3e2723);">Jazz</div>
+            <div class="genre-card" data-genre="classical" style="background:linear-gradient(135deg,#009688,#004d40);">Clásica</div>
+            <div class="genre-card" data-genre="latin" style="background:linear-gradient(135deg,#f44336,#b71c1c);">Latina</div>
+            <div class="genre-card" data-genre="indie" style="background:linear-gradient(135deg,#00bcd4,#006064);">Indie</div>
+          </div>
+        </section>
+
+        <!-- Trending searches -->
+        <section class="cards-section">
+          <div class="cards-header">
+            <h2>Tendencias</h2>
+          </div>
+          <div class="trending-list" id="trending-list">
+            <div class="trending-item" data-query="Bad Bunny">
+              <span class="trending-num">1</span>
+              <span class="trending-name">Bad Bunny</span>
+            </div>
+            <div class="trending-item" data-query="Taylor Swift">
+              <span class="trending-num">2</span>
+              <span class="trending-name">Taylor Swift</span>
+            </div>
+            <div class="trending-item" data-query="The Weeknd">
+              <span class="trending-num">3</span>
+              <span class="trending-name">The Weeknd</span>
+            </div>
+            <div class="trending-item" data-query="Drake">
+              <span class="trending-num">4</span>
+              <span class="trending-name">Drake</span>
+            </div>
+            <div class="trending-item" data-query="Billie Eilish">
+              <span class="trending-num">5</span>
+              <span class="trending-name">Billie Eilish</span>
+            </div>
+            <div class="trending-item" data-query="Karol G">
+              <span class="trending-num">6</span>
+              <span class="trending-name">Karol G</span>
+            </div>
+          </div>
         </section>
 
       </div>
@@ -235,12 +280,8 @@
 
       <!-- Playlists list -->
       <div class="right-playlists">
-        <div class="rp-tabs">
-          <button class="rp-tab active">Playlists</button>
-          <button class="rp-tab">Podcasts</button>
-          <button class="rp-tab">Artistas</button>
-        </div>
-        <div class="rp-list" id="rp-list"></div>
+        <h3 class="sidebar-label" style="padding:16px 16px 0;">Tus Playlists</h3>
+        <div class="rp-list" id="rp-list" style="padding:8px 16px;"></div>
       </div>
     </aside>
 
