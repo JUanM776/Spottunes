@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 Spot-Tunes
+# Spot-Tunes
 
 **Un reproductor de música web moderno inspirado en Spotify**
 
@@ -15,7 +15,7 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 
 ---
 
-## 📸 Vista previa
+## Vista previa
 
 | Home | Playlist Detail | Perfil de Artista |
 |------|----------------|-------------------|
@@ -23,9 +23,9 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 
 ---
 
-## ✨ Características
+## Características
 
-### 🎧 Reproducción
+### Reproducción
 - Búsqueda en tiempo real con la API de iTunes (previews de 30s)
 - Reproducción automática al agregar canciones
 - Modos shuffle y repeat (todo / una canción)
@@ -34,7 +34,7 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 - Visualizador de audio con Web Audio API (waveform en sidebar + barras en fullscreen)
 - Barras ecualizadoras animadas en la canción actual
 
-### 📋 Playlists
+### Playlists
 - Crear, eliminar y gestionar playlists personalizadas
 - Playlists automáticas por género musical (10 géneros)
 - Perfiles de artista desde la sección de tendencias
@@ -43,7 +43,7 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 - Favoritos con acceso rápido
 - Persistencia completa en localStorage
 
-### 🎨 Interfaz
+### Interfaz
 - Diseño de 3 columnas: iconbar compacta + contenido + sidebar derecho
 - Sistema de vistas: Home y Playlist Detail con navegación fluida
 - Hero banner con color dinámico extraído del artwork
@@ -54,14 +54,14 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 - Modo fullscreen con visualizador
 - Responsive design (desktop y mobile)
 
-### 👤 Personalización
+### Personalización
 - Perfil de usuario con nombre y avatar (iniciales)
 - 6 colores de acento seleccionables que cambian toda la interfaz
 - Saludo dinámico personalizado (Buenos días/tardes/noches)
 - Historial de búsquedas recientes
 - Sección "Escuchado recientemente"
 
-### ⌨️ Atajos de teclado
+### Atajos de teclado
 | Atajo | Acción |
 |-------|--------|
 | `Espacio` | Play / Pausa |
@@ -76,7 +76,7 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 
 ---
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - **HTML5** — Estructura semántica
 - **CSS3** — Variables CSS, Grid, Flexbox, animaciones, backdrop-filter
@@ -87,7 +87,7 @@ Busca, reproduce y organiza tu música favorita con previews de 30 segundos desd
 
 ---
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 spot-tunes/
@@ -111,7 +111,7 @@ spot-tunes/
 
 ---
 
-## 🚀 Instalación
+## Instalación
 
 No requiere instalación. Es una aplicación 100% estática.
 
@@ -143,7 +143,7 @@ npx serve .
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ### Estructura de datos
 La playlist utiliza una **lista doblemente enlazada** (Doubly Linked List) como estructura de datos principal, permitiendo:
@@ -166,7 +166,7 @@ Todos los datos del usuario se almacenan en `localStorage`:
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es de código abierto. Úsalo, modifícalo y compártelo libremente.
 
@@ -174,6 +174,6 @@ Este proyecto es de código abierto. Úsalo, modifícalo y compártelo librement
 
 <div align="center">
 
-Hecho con 🎶 por **Spot-Tunes**
+Hecho con por **Spot-Tunes**
 
 </div>
