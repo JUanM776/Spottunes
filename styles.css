@@ -1064,12 +1064,18 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
 }
 
 .genre-card {
-  height: 90px; border-radius: var(--radius-lg);
+  height: 110px; border-radius: var(--radius-lg);
   display: flex; align-items: flex-end;
   padding: 12px 14px; font-size: 15px; font-weight: 700;
   cursor: pointer; transition: all var(--transition);
   position: relative; overflow: hidden;
   box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+.genre-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 60%);
+  pointer-events: none;
 }
 .genre-card:hover { transform: scale(1.03); box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
 
@@ -1104,3 +1110,6 @@ input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius
   margin-left: auto;
 }
 .hero-delete-btn:hover { background: rgba(255,60,60,0.12); border-color: #ff6b6b; transform: scale(1.05); }
+
+.genre-card { z-index: 0; }
+.genre-card::after { z-index: 1; }
