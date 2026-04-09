@@ -118,9 +118,12 @@
       var name = playlistName || getPlaylistName(currentPlaylistId);
       $('hero-title').textContent = name;
       $('hero-badge').textContent = currentPlaylistId === 'favorites' ? 'FAVORITOS' : 'PLAYLIST';
-      // Show delete button only for custom playlists
+      // Show delete button only for user-created playlists (not main, favorites, genre_, artist_)
       var delBtn = $('hero-delete');
-      if(delBtn) delBtn.style.display = (currentPlaylistId !== 'main' && currentPlaylistId !== 'favorites') ? 'flex' : 'none';
+      if(delBtn) {
+        var isSystem = currentPlaylistId==='main' || currentPlaylistId==='favorites' || currentPlaylistId.indexOf('genre_')===0 || currentPlaylistId.indexOf('artist_')===0;
+        delBtn.style.display = isSystem ? 'none' : 'flex';
+      }
       updateIconbarActive(currentPlaylistId);
       render();
       mainEl.scrollTop = 0;
@@ -887,6 +890,7 @@
           currentPlaylistId=plId;
           save();
           navigateTo('detail', plId, '🎵 '+label);
+          $('hero-desc').textContent='Playlist creada por Spot-Tunes';
           // Auto play first
           var list=getList();
           if(list._cursor) playCurrent();
@@ -926,7 +930,7 @@
           if(artistArt && heroAlbumArt) heroAlbumArt.style.backgroundImage='url('+artistArt+')';
           if(artistArt) extractColor(artistArt);
           $('hero-badge').textContent='ARTISTA';
-          $('hero-desc').textContent=items.length+' canciones disponibles';
+          $('hero-desc').textContent='Playlist creada por Spot-Tunes • '+items.length+' canciones';
           // Auto play
           var list=getList();
           if(list._cursor) playCurrent();
