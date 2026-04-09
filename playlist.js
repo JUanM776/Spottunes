@@ -898,9 +898,40 @@
   document.querySelectorAll('.trending-item').forEach(function(item){
     item.addEventListener('click', function(){
       var query = item.getAttribute('data-query');
-      searchTerm.value = query;
-      doSearch(query, searchResults, null);
-      openDropdown();
+      var plId = 'artist_' + query.replace(/[^a-z0-9]/gi,'_').toLowerCase();
+      if(!playlists[plId]) playlists[plId] = new DLL();
+      playlists[plId].head=null;playlists[plId].tail=null;playlists[plId]._length=0;playlists[plId]._cursor=null;
+
+      toast('Cargando ' + query + '...');
+      fetch('https://itunes.apple.com/search?term='+encodeURIComponent(query)+'&media=music&entity=song&limit=25')
+        .then(function(r){return r.json();})
+        .then(function(data){
+          var items=(data&&data.results)||[];
+          if(!items.length){toast('Sin resultados para '+query,'error');return;}
+          var artistArt = '';
+          items.forEach(function(it){
+            if(!artistArt && it.artworkUrl100) artistArt = it.artworkUrl100.replace('100x100','600x600');
+            playlists[plId].pushBack({
+              id:String(it.trackId||uid()),
+              title:it.trackName||'Sin título',
+              artist:it.artistName||'Desconocido',
+              previewUrl:it.previewUrl||'',
+              artwork:it.artworkUrl100||''
+            });
+          });
+          currentPlaylistId=plId;
+          save();
+          navigateTo('detail', plId, query);
+          // Set artist artwork as hero image
+          if(artistArt && heroAlbumArt) heroAlbumArt.style.backgroundImage='url('+artistArt+')';
+          if(artistArt) extractColor(artistArt);
+          $('hero-badge').textContent='ARTISTA';
+          $('hero-desc').textContent=items.length+' canciones disponibles';
+          // Auto play
+          var list=getList();
+          if(list._cursor) playCurrent();
+        })
+        .catch(function(){toast('Error cargando '+query,'error');});
     });
   });
 
