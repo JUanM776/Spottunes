@@ -983,19 +983,148 @@
     if(e.key==='?' && shortcutsModal){ shortcutsModal.style.display = shortcutsModal.style.display==='flex'?'none':'flex'; }
   });
 
+  // ===== PROFILE SYSTEM =====
+  var userProfile = JSON.parse(localStorage.getItem('stProfile') || 'null');
+
+  function getInitials(name) {
+    if(!name) return '?';
+    var parts = name.trim().split(/\s+/);
+    if(parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0].substring(0,2).toUpperCase();
+  }
+
+  function applyProfile() {
+    if(!userProfile) return;
+    // Set avatar initials
+    var initials = getInitials(userProfile.name);
+    var avatarSm = $('user-avatar-sm');
+    var ppAvatar = $('pp-avatar');
+    if(avatarSm) avatarSm.textContent = initials;
+    if(ppAvatar) ppAvatar.textContent = initials;
+
+    // Set name
+    var ppName = $('pp-name');
+    if(ppName) ppName.textContent = userProfile.name;
+
+    // Set accent color
+    if(userProfile.color) {
+      document.documentElement.style.setProperty('--accent', userProfile.color);
+      // Derive hover and dim
+      document.documentElement.style.setProperty('--accent-hover', userProfile.color);
+      document.documentElement.style.setProperty('--accent-dim', userProfile.color + '25');
+      document.documentElement.style.setProperty('--accent-glow', userProfile.color + '40');
+      // Update avatar bg
+      if(avatarSm) avatarSm.style.background = userProfile.color;
+      if(ppAvatar) ppAvatar.style.background = userProfile.color;
+      // Update ib-logo
+      var ibLogo2 = document.querySelector('.ib-logo');
+      if(ibLogo2) ibLogo2.style.background = 'linear-gradient(135deg,' + userProfile.color + ',' + userProfile.color + 'cc)';
+    }
+
+    // Update greeting
+    var greetEl = $('home-greeting-text');
+    if(greetEl) greetEl.textContent = getGreeting() + ', ' + userProfile.name.split(' ')[0];
+
+    // Update stats
+    var ppStats = $('pp-stats');
+    if(ppStats) ppStats.textContent = (2 + customPlaylists.length) + ' playlists • ' + favorites.length + ' favoritos';
+
+    // Highlight active color in profile panel
+    document.querySelectorAll('#pp-colors .color-opt').forEach(function(btn){
+      btn.classList.toggle('active', btn.getAttribute('data-color') === userProfile.color);
+    });
+  }
+
+  function saveProfile() {
+    try { localStorage.setItem('stProfile', JSON.stringify(userProfile)); } catch(e){}
+  }
+
+  // Welcome modal
+  var welcomeModal = $('welcome-modal');
+  var welcomeName = $('welcome-name');
+  var welcomeStart = $('welcome-start');
+  var welcomeColor = '#ff6b35';
+
+  if(welcomeModal) {
+    document.querySelectorAll('#color-options .color-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('#color-options .color-opt').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        welcomeColor = btn.getAttribute('data-color');
+      });
+    });
+  }
+
+  if(welcomeStart) welcomeStart.addEventListener('click', function(){
+    var name = (welcomeName.value || '').trim();
+    if(!name) { toast('Ingresa tu nombre', 'error'); welcomeName.focus(); return; }
+    userProfile = { name: name, color: welcomeColor };
+    saveProfile();
+    welcomeModal.style.display = 'none';
+    applyProfile();
+    toast('¡Bienvenido, ' + name.split(' ')[0] + '!');
+  });
+
+  // Profile panel
+  var profilePanel = $('profile-panel');
+  var userBtn = $('user-btn');
+  var ppClose = $('pp-close');
+  var ppNameInput = $('pp-name-input');
+
+  if(userBtn) userBtn.addEventListener('click', function(){
+    profilePanel.classList.toggle('open');
+    if(profilePanel.classList.contains('open') && userProfile) {
+      ppNameInput.value = userProfile.name || '';
+      applyProfile();
+    }
+  });
+
+  if(ppClose) ppClose.addEventListener('click', function(){ profilePanel.classList.remove('open'); });
+
+  if(ppNameInput) ppNameInput.addEventListener('change', function(){
+    var name = (ppNameInput.value || '').trim();
+    if(!name || !userProfile) return;
+    userProfile.name = name;
+    saveProfile();
+    applyProfile();
+    toast('Nombre actualizado');
+  });
+
+  document.querySelectorAll('#pp-colors .color-opt').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(!userProfile) return;
+      userProfile.color = btn.getAttribute('data-color');
+      saveProfile();
+      applyProfile();
+    });
+  });
+
+  var ppReset = $('pp-reset');
+  if(ppReset) ppReset.addEventListener('click', function(){
+    localStorage.clear();
+    userProfile = null;
+    location.reload();
+  });
+
   // ===== INIT =====
   var loaded=load();
-  // Clean old default songs that have no previewUrl
   ['main','favorites'].forEach(function(k){
     if(!playlists[k])return;
     var arr=playlists[k].toArray();
     var dirty=false;
     arr.forEach(function(s){
-      if(!s.previewUrl && !s.artwork){
-        playlists[k].removeById(s.id); dirty=true;
-      }
+      if(!s.previewUrl && !s.artwork){ playlists[k].removeById(s.id); dirty=true; }
     });
     if(dirty)save();
   });
+
+  // Profile check
+  if(!userProfile) {
+    welcomeModal.style.display = 'flex';
+    setTimeout(function(){ welcomeName.focus(); }, 300);
+  } else {
+    applyProfile();
+  }
+
   renderRecent();renderHome();render();
 })();
