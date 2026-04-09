@@ -862,9 +862,36 @@
   document.querySelectorAll('.genre-card').forEach(function(card){
     card.addEventListener('click', function(){
       var genre = card.getAttribute('data-genre');
-      searchTerm.value = genre;
-      doSearch(genre, searchResults, null);
-      openDropdown();
+      var label = card.textContent.trim();
+      // Create or reuse genre playlist
+      var plId = 'genre_' + genre.replace(/[^a-z0-9]/gi,'_');
+      if(!playlists[plId]) playlists[plId] = new DLL();
+      // Clear old songs
+      playlists[plId].head=null;playlists[plId].tail=null;playlists[plId]._length=0;playlists[plId]._cursor=null;
+
+      toast('Cargando ' + label + '...');
+      fetch('https://itunes.apple.com/search?term='+encodeURIComponent(genre+' music')+'&media=music&entity=song&limit=20')
+        .then(function(r){return r.json();})
+        .then(function(data){
+          var items=(data&&data.results)||[];
+          if(!items.length){toast('Sin resultados para '+label,'error');return;}
+          items.forEach(function(item){
+            playlists[plId].pushBack({
+              id:String(item.trackId||uid()),
+              title:item.trackName||'Sin título',
+              artist:item.artistName||'Desconocido',
+              previewUrl:item.previewUrl||'',
+              artwork:item.artworkUrl100||''
+            });
+          });
+          currentPlaylistId=plId;
+          save();
+          navigateTo('detail', plId, '🎵 '+label);
+          // Auto play first
+          var list=getList();
+          if(list._cursor) playCurrent();
+        })
+        .catch(function(){toast('Error cargando '+label,'error');});
     });
   });
 
