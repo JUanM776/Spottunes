@@ -624,6 +624,53 @@
     });
   }
 
+  // ===== LYRICS =====
+  var lyricsBody = $('lyrics-body');
+  var currentLyricsId = null;
+
+  function fetchLyrics(song) {
+    if(!song || !lyricsBody) return;
+    if(currentLyricsId === song.id) return; // Already showing
+    currentLyricsId = song.id;
+
+    var artist = song.artist.replace(/\s*\(.*?\)\s*/g, '').trim();
+    var title = song.title.replace(/\s*\(.*?\)\s*/g, '').replace(/\s*-\s*.*$/, '').trim();
+
+    lyricsBody.innerHTML = '<div class="lyrics-loading">Buscando letra</div>';
+
+    fetch('https://api.lyrics.ovh/v1/' + encodeURIComponent(artist) + '/' + encodeURIComponent(title))
+      .then(function(r) {
+        if(!r.ok) throw new Error('not found');
+        return r.json();
+      })
+      .then(function(data) {
+        if(!data.lyrics || !data.lyrics.trim()) {
+          lyricsBody.innerHTML = '<div class="lyrics-error">Letra no disponible para esta canción</div>';
+          return;
+        }
+        var lines = data.lyrics.trim().split('\n');
+        var html = '<div class="lyrics-text">';
+        lines.forEach(function(line) {
+          html += '<span class="lyrics-line">' + (line.trim() || '&nbsp;') + '</span>';
+        });
+        html += '</div>';
+        lyricsBody.innerHTML = html;
+        lyricsBody.scrollTop = 0;
+      })
+      .catch(function() {
+        lyricsBody.innerHTML = '<div class="lyrics-error">Letra no encontrada para "' + title + '"</div>';
+      });
+  }
+
+  // Lyrics toggle
+  var lyricsToggle = $('lyrics-toggle');
+  var lyricsSection = $('lyrics-section');
+  if(lyricsToggle) lyricsToggle.addEventListener('click', function() {
+    var body = $('lyrics-body');
+    if(body.style.display === 'none') { body.style.display = 'block'; }
+    else { body.style.display = 'none'; }
+  });
+
   // ===== SONG NOTIFICATION =====
   function showSongNotif(song){
     if(!song) return;
@@ -642,6 +689,7 @@
     var cur=getList()._cursor;if(!cur||!cur.value.previewUrl)return;
     trackRecentlyPlayed(cur.value);
     showSongNotif(cur.value);
+    fetchLyrics(cur.value);
     initAudio();audio.src=cur.value.previewUrl;
     audio.volume=cbVolume?parseInt(cbVolume.value,10)/100:0.8;
     audio.play().then(function(){isPlaying=true;updatePlayIcons();updateFS();}).catch(function(){});
